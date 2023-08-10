@@ -131,7 +131,7 @@ Resources:
     DependsOn: logzioFirehose
     Properties:
       Code:
-        S3Bucket: logzio-aws-integrations-us-east-1
+        S3Bucket: logzio-aws-integrations-<<REGION>
         S3Key: firehose-logs/0.0.1/function.zip
       FunctionName:  !Join ['-', [!Ref AWS::StackName, 'sf-func']]
       Handler: bootstrap

@@ -1,0 +1,48 @@
+name: Upload new release
+on:
+  release:
+    types: [published]
+
+jobs:
+  upload_to_buckets:
+    if: contains(github.event.release.tag_name, 'ecs-fargate-')
+    name: Upload to S3 buckets
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        aws_region:
+          - 'us-east-1'
+          - 'us-east-2'
+          - 'us-west-1'
+          - 'us-west-2'
+          - 'eu-central-1'
+          - 'eu-north-1'
+          - 'eu-west-1'
+          - 'eu-west-2'
+          - 'eu-west-3'
+          - 'sa-east-1'
+          - 'ap-northeast-1'
+          - 'ap-northeast-2'
+          - 'ap-northeast-3'
+          - 'ap-south-1'
+          - 'ap-southeast-1'
+          - 'ap-southeast-2'
+          - 'ca-central-1'
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      - name: create new version
+        run: |
+          cp ./aws/ecs-fargate/sam-template.yaml ./sam-template-${{ matrix.aws_region }}.yaml
+          sed -i "s/<<REGION>>/${{ matrix.aws_region }}/" "./sam-template-${{ matrix.aws_region }}.yaml"
+      - name: Upload to aws
+        run: |
+          sudo apt-get update
+          sudo apt-get install awscli
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_KEY }}
+          aws configure set region ${{ matrix.aws_region }}
+          aws s3 cp ./sam-template-${{ matrix.aws_region }}.yaml s3://logzio-aws-integrations-${{ matrix.aws_region }}/ecs-fargate/${{ github.event.release.tag_name }}/sam-template.yaml --acl public-read
+      - name: Clean
+        run: |
+          rm ./sam-template-${{ matrix.aws_region }}.yaml
