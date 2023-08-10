@@ -14,7 +14,7 @@ Parameters:
       - 'https://aws-firehose-logs-listener-nl.logz.io'
       - 'https://aws-firehose-logs-listener-uk.logz.io'
       - 'https://aws-firehose-logs-listener-wa.logz.io'
-  logzioToken:
+  logzioLogsToken:
     Type: String
     Description: 'Your Logz.io log shipping token'
     MinLength: 1
@@ -57,7 +57,6 @@ Parameters:
     Description: The size of the buffer, in MBs, that Kinesis Data Firehose uses for incoming data before delivering it to the destination
     Default: 5
 
-  # Parameters for the second stack
   ClusterName:
     Type: String
     Description: Enter the name of your ECS cluster from which you want to collect metrics
@@ -233,7 +232,7 @@ Resources:
           LogGroupName: !Ref logzioFirehoseLogGroup
           LogStreamName: !Ref logzioLogStream
         EndpointConfiguration:
-          AccessKey: !Ref logzioToken
+          AccessKey: !Ref logzioLogsToken
           Name: !Join [ '-', [ 'LogzioEndpoint', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
           Url: !Sub '${logzioListener}/?type=${logzioType}'
         RetryOptions:
