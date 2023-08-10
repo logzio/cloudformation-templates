@@ -5,7 +5,7 @@ This repository contains public cloudformation templates for logzio customers to
 ## Development: Add a new template
 - Create a new directory in `./aws` path with the name of your new template -
 - Create your template file with the name `sam-template.yaml`
-- Create a `README.MD` for your template
+- Create a `README.md` for your template
 - Create a new workflow for your template to upload to s3, following this example:
 ```yaml
 name: Upload new release <<template_name>>
