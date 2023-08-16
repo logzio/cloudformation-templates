@@ -1,0 +1,523 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Master template that deploys two nested stacks for Logz.io logging and monitoring'
+Parameters:
+  # Parameters for the first stack
+  logzioListener:
+    Type: String
+    Description: "The Logz.io listener URL for your region. You can find explanations here: https://docs.logz.io/user-guide/accounts/account-region.html"
+    Default: 'https://aws-firehose-logs-listener.logz.io'
+    AllowedValues:
+      - 'https://aws-firehose-logs-listener.logz.io'
+      - 'https://aws-firehose-logs-listener-au.logz.io'
+      - 'https://aws-firehose-logs-listener-ca.logz.io'
+      - 'https://aws-firehose-logs-listener-eu.logz.io'
+      - 'https://aws-firehose-logs-listener-nl.logz.io'
+      - 'https://aws-firehose-logs-listener-uk.logz.io'
+      - 'https://aws-firehose-logs-listener-wa.logz.io'
+  logzioLogsToken:
+    Type: String
+    Description: 'Your Logz.io log shipping token'
+    MinLength: 1
+  logzioType:
+    Type: String
+    Description: The log type you'll use with this shipping method. This can be a built-in log type, or your custom log type
+    Default: 'ecs'
+  services:
+    Type: String
+    Description: A comma-separated list of services you want to collect logs from
+    Default: ecs
+  customLogGroups:
+    Type: String
+    Description: A comma-separated list of custom log groups you want to collect logs from
+  triggerLambdaTimeout:
+    Type: Number
+    Description: The amount of seconds that Lambda allows a function to run before stopping it, for the trigger function.
+    Default: 60
+  triggerLambdaMemory:
+    Type: Number
+    Description: Trigger function's allocated CPU proportional to the memory configured, in MB.
+    Default: 512
+  triggerLambdaLogLevel:
+    Type: String
+    Description: "Log level for the Lambda function. Can be one of: debug, info, warn, error, fatal, panic."
+    Default: info
+    AllowedValues:
+      - debug
+      - info
+      - warn
+      - error
+      - fatal
+      - panic
+  httpEndpointDestinationIntervalInSeconds:
+    Type: Number
+    Description: The length of time, in seconds, that Kinesis Data Firehose buffers incoming data before delivering it to the destination
+    Default: 60
+  httpEndpointDestinationSizeInMBs:
+    Type: Number
+    Description: The size of the buffer, in MBs, that Kinesis Data Firehose uses for incoming data before delivering it to the destination
+    Default: 5
+
+  ClusterName:
+    Type: String
+    Description: Enter the name of your ECS cluster from which you want to collect metrics
+  LogzioTracingToken:
+    Type: String
+    Description: Logz.io tracing account token
+  LogzioMetricsToken:
+    Type: String
+    Description: Logz.io metrics account token
+  LogzioRegion:
+    Type: String
+    Description: Logz.io region
+    AllowedValues:
+      - us
+      - eu
+      - au
+      - ca
+      - uk
+      - wa
+    Default: us
+  LogzioListenerUrl:
+    Type: String
+    Description: Logz.io listener url
+    AllowedValues:
+      - https://listener.logz.io:8053
+      - https://listener-eu.logz.io:8053
+      - https://listener-au.logz.io:8053
+      - https://listener-ca.logz.io:8053
+      - https://listener-uk.logz.io:8053
+      - https://listener-wa.logz.io:8053
+    Default: "https://listener.logz.io:8053"
+  CreateIAMRoles:
+    Type: String
+    Default: 'True'
+    AllowedValues:
+      - 'True'
+      - 'False'
+    Description: Whether to create default IAM roles
+    ConstraintDescription: must specify True or False.
+  TaskRoleArn:
+    Type: String
+    Description: Enter the role arn you want to use as the ecs task role. (Optional, required only if `CreateIAMRoles` is set to `False`)
+  ExecutionRoleArn:
+    Type: String
+    Description: Enter the role arn you want to use as the ecs execution role. (Optional, required only if `CreateIAMRoles` is set to `False`)
+  SecurityGroups:
+    Type: CommaDelimitedList
+    Description: The list of SecurityGroupIds in your Virtual Private Cloud (VPC) comma seperated
+  Subnets:
+    Type: CommaDelimitedList
+    Description: The list of Subnets in your Virtual Private Cloud (VPC) comma seperated
+
+Conditions:
+  createEventbridgeTrigger: !Not
+    - !Equals
+      - !Ref services
+      - ''
+  CreateRoles: !Equals
+    - !Ref CreateIAMRoles
+    - 'True'
+  DefaultTaskRole: !Equals
+    - !Ref TaskRoleArn
+    - Default
+  DefaultExecutionRole: !Equals
+    - !Ref ExecutionRoleArn
+    - Default
+Resources:
+  logzioFirehoseSubscriptionFiltersFunction:
+    Type: 'AWS::Lambda::Function'
+    DependsOn: logzioFirehose
+    Properties:
+      Code:
+        S3Bucket: logzio-aws-integrations-<<REGION>>
+        S3Key: firehose-logs/0.0.1/function.zip
+      FunctionName:  !Join ['-', [!Ref AWS::StackName, 'sf-func']]
+      Handler: bootstrap
+      Runtime: provided.al2
+      Role: !GetAtt firehoseSubscriptionFilterLambdaRole.Arn
+      Timeout: !Ref triggerLambdaTimeout
+      MemorySize: !Ref triggerLambdaMemory
+      ReservedConcurrentExecutions: 1
+      Environment:
+        Variables:
+          SERVICES: !Ref services
+          CUSTOM_GROUPS: !Ref customLogGroups
+          ACCOUNT_ID: !Ref AWS::AccountId
+          AWS_PARTITION: !Ref AWS::Partition
+          FIREHOSE_ARN: !GetAtt logzioFirehose.Arn
+          LOG_LEVEL: !Ref triggerLambdaLogLevel
+          PUT_SF_ROLE: !GetAtt firehosePutSubscriptionFilterRole.Arn
+  firehoseSubscriptionFilterLambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Join [ '-', [ 'logzioRole', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: !Join [ '-', [ 'logzioRole', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'logs:DescribeLogGroups'
+                  - 'logs:PutSubscriptionFilter'
+                  - 'logs:DeleteSubscriptionFilter'
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*'
+                  - !GetAtt logzioFirehose.Arn
+              - Effect: Allow
+                Action:
+                  - 'iam:PassRole'
+                Resource: !GetAtt firehosePutSubscriptionFilterRole.Arn
+  triggerPrimerInvoke:
+    Type: AWS::CloudFormation::CustomResource
+    DependsOn: logzioFirehoseSubscriptionFiltersFunction
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt logzioFirehoseSubscriptionFiltersFunction.Arn
+  logGroupCreationEvent:
+    Condition: createEventbridgeTrigger
+    Type: AWS::Events::Rule
+    Properties:
+      Description: 'This event is triggered by the creation of a new log group, and triggers the Logz.io subscription filter function.'
+      EventPattern:
+        source:
+          - 'aws.logs'
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'logs.amazonaws.com'
+          eventName:
+            - 'CreateLogGroup'
+      Name: !Join [ '-', [ 'logGroupCreated', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt logzioFirehoseSubscriptionFiltersFunction.Arn
+          Id: !Join [ '-', [ 'logzioSubscriptionFilter', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+  permissionForEventsToInvokeLambda:
+    Condition: createEventbridgeTrigger
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref logzioFirehoseSubscriptionFiltersFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt logGroupCreationEvent.Arn
+  logzioFirehose:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: !Join [ '-', [ 'logzio', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+      DeliveryStreamType: 'DirectPut'
+      HttpEndpointDestinationConfiguration:
+        BufferingHints:
+          IntervalInSeconds: !Ref httpEndpointDestinationIntervalInSeconds
+          SizeInMBs: !Ref httpEndpointDestinationSizeInMBs
+        CloudWatchLoggingOptions:
+          Enabled: true
+          LogGroupName: !Ref logzioFirehoseLogGroup
+          LogStreamName: !Ref logzioLogStream
+        EndpointConfiguration:
+          AccessKey: !Ref logzioLogsToken
+          Name: !Join [ '-', [ 'LogzioEndpoint', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+          Url: !Sub '${logzioListener}/?type=${logzioType}'
+        RetryOptions:
+          DurationInSeconds: 60
+        RoleARN: !GetAtt logzioFirehoseLoggingRole.Arn
+        S3BackupMode: FailedDataOnly
+        S3Configuration:
+          BucketARN: !GetAtt logzioS3BackupBucket.Arn
+          RoleARN: !GetAtt logzioS3DestinationFirehoseRole.Arn
+  logzioFirehoseLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join [ '-', [ 'logzio-logs-firehose', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+  logzioLogStream:
+    DependsOn: logzioFirehoseLogGroup
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Ref logzioFirehoseLogGroup
+      LogStreamName: !Join [ '-', [ 'logzio-logs-firehose', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+  logzioFirehoseLoggingRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Join [ '-', [ 'LogzioFirehoseLoggingRole', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - firehose.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: !Join [ '-', [ 'LogzioFirehoseLoggingPolicy', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - !Sub
+                    - 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${NewLogGroupName}:${NewLogStreamName}:*'
+                    - NewLogGroupName: !Ref logzioFirehoseLogGroup
+                      NewLogStreamName: !Ref logzioLogStream
+  logzioS3BackupBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join [ '-', [ 'logzio-logs-backup', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+  logzioS3DestinationFirehoseRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Join [ '-', [ 'LogzioS3DestFirehoseRole', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - firehose.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: !Join [ '-', [ 'LogzioS3DestFirehosePolicy', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:AbortMultipartUpload'
+                  - 's3:GetBucketLocation'
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                  - 's3:ListBucketMultipartUploads'
+                  - 's3:PutObject'
+                Resource:
+                  - !Sub
+                    - 'arn:aws:s3:::${BucketName}'
+                    - BucketName: !Ref logzioS3BackupBucket
+                  - !Sub
+                    - 'arn:aws:s3:::${BucketName}/*'
+                    - BucketName: !Ref logzioS3BackupBucket
+              - Effect: Allow
+                Action:
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - !Sub
+                    - 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${NewLogGroupName}:${NewLogStreamName}:*'
+                    - NewLogGroupName: !Ref logzioFirehoseLogGroup
+                      NewLogStreamName: !Ref logzioLogStream
+  firehosePutSubscriptionFilterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join [ '-', [ 'logzioPutSFRole', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: logs.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: !Join [ '-', [ 'logzioPutSFPolicy', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'firehose:PutRecordBatch'
+                  - 'firehose:DescribeDeliveryStream'
+                  - 'firehose:PutRecord'
+                Resource: !GetAtt logzioFirehose.Arn
+  ECSTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: ecs-aws-otel-sidecar-service
+      TaskRoleArn: !If
+        - CreateRoles
+        - !GetAtt
+          - ECSTaskRole
+          - Arn
+        - !If
+          - DefaultTaskRole
+          - !Sub 'arn:aws:iam::${AWS::AccountId}:role/AWSOTelRole'
+          - !Ref TaskRoleArn
+      ExecutionRoleArn: !If
+        - CreateRoles
+        - !GetAtt
+          - ECSExecutionRole
+          - Arn
+        - !If
+          - DefaultExecutionRole
+          - !Sub 'arn:aws:iam::${AWS::AccountId}:role/AWSOTelExecutionRole'
+          - !Ref ExecutionRoleArn
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: aws-collector
+          Image: 'amazon/aws-otel-collector:latest'
+          Command: ["--config=/etc/ecs/ecs-default-config.yaml"]
+          PortMappings:
+            - ContainerPort: 4317
+              Protocol: tcp
+            - ContainerPort: 4318
+              Protocol: tcp
+          Cpu: '256'
+          Memory: '512'
+          Environment:
+            - Name: LOGZIO_TRACING_TOKEN
+              Value: !Ref LogzioTracingToken
+            - Name: LOGZIO_REGION
+              Value: !Ref LogzioRegion
+            - Name: LOGZIO_LISTENER_URL
+              Value: !Ref LogzioListenerUrl
+            - Name: LOGZIO_METRICS_TOKEN
+              Value: !Ref LogzioMetricsToken
+          Secrets:
+            - Name: AOT_CONFIG_CONTENT
+              ValueFrom: !Ref CollectorConfigParameter
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-create-group: 'True'
+              awslogs-group: /ecs/ecs-aws-otel-sidecar-collector
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-stream-prefix: ecs
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: '1024'
+      Memory: '2048'
+  ECSReplicaService:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      TaskDefinition: !Ref ECSTaskDefinition
+      Cluster: !Ref ClusterName
+      LaunchType: FARGATE
+      SchedulingStrategy: REPLICA
+      DesiredCount: 1
+      ServiceName: aws-otel-sidecar-service
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups: !Ref SecurityGroups
+          Subnets: !Ref Subnets
+  CollectorConfigParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: collector-config
+      Type: String
+      Value: |
+        receivers:
+          awsxray:
+            endpoint: 0.0.0.0:2000
+            transport: udp
+          otlp:
+            protocols:
+              grpc:
+                endpoint: "0.0.0.0:4317"
+              http:
+                endpoint: "0.0.0.0:4318"
+          awsecscontainermetrics:
+        processors:
+          batch:
+            send_batch_size: 10000
+            timeout: 1s
+        exporters:
+          logzio/traces:
+            # replace with your Logz.io tracing account token
+            account_token: ${LOGZIO_TRACING_TOKEN}
+            # replace with your Logz.io listener URL
+            region: ${LOGZIO_REGION}
+          prometheusremotewrite:
+            # replace with your Logz.io account token
+            endpoint: ${LOGZIO_LISTENER_URL}
+            external_labels:
+              aws_env: fargate-ecs
+            headers:
+              # replace with your Logz.io metrics account token
+              Authorization: "Bearer ${LOGZIO_METRICS_TOKEN}"
+            resource_to_telemetry_conversion:
+              enabled: true
+        service:
+          pipelines:
+            traces:
+              receivers: [ awsxray,otlp ]
+              processors: [ batch ]
+              exporters: [ logzio/traces ]
+            metrics:
+              receivers: [ otlp, awsecscontainermetrics ]
+              exporters: [ prometheusremotewrite ]
+          telemetry:
+            logs:
+              level: "debug"
+  ECSTaskRole:
+    Type: 'AWS::IAM::Role'
+    Condition: CreateRoles
+    Properties:
+      Description: Allows ECS tasks to call AWS services on your behalf.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: AWSOpenTelemetryPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:PutLogEvents'
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:DescribeLogStreams'
+                  - 'logs:DescribeLogGroups'
+                  - 'xray:PutTraceSegments'
+                  - 'xray:PutTelemetryRecords'
+                  - 'xray:GetSamplingRules'
+                  - 'xray:GetSamplingTargets'
+                  - 'xray:GetSamplingStatisticSummaries'
+                  - 'ssm:GetParameters'
+                Resource: '*'
+      RoleName: AWSOTelRole
+  ECSExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Condition: CreateRoles
+    Properties:
+      Description: >-
+        Allows ECS container agent makes calls to the Amazon ECS API on your
+        behalf.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+        - 'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess'
+      RoleName: AWSOTelExecutionRole
