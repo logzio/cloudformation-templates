@@ -18,7 +18,25 @@ Next, you'll need to configure your CloudFormation template and point the OTLP e
 
 Click on the **Launch Stack** button below to deploy the CloudFormation template. This template will create the required resources and configurations for the AWS OTel Collector.
 
-| [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)]() |  |
+| Region           | Deployment                                                                                                                                                                                                                                                                                                                                           |
+|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `us-east-1`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-us-east-1.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `us-east-2`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/create/review?templateURL=https://logzio-aws-integrations-us-east-2.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `us-west-1`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-us-west-1.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `us-west-2`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?templateURL=https://logzio-aws-integrations-us-west-2.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `eu-central-1`   | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-central-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-eu-central-1.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)     |
+| `eu-north-1`     | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-north-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-eu-north-1.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)         |
+| `eu-west-1`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-eu-west-1.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `eu-west-2`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-2#/stacks/create/review?templateURL=https://logzio-aws-integrations-eu-west-2.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `eu-west-3`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-3#/stacks/create/review?templateURL=https://logzio-aws-integrations-eu-west-3.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `sa-east-1`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=sa-east-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-sa-east-1.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `ap-northeast-1` | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-ap-northeast-1.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate) |
+| `ap-northeast-2` | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-2#/stacks/create/review?templateURL=https://logzio-aws-integrations-ap-northeast-2.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate) |
+| `ap-northeast-3` | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-3#/stacks/create/review?templateURL=https://logzio-aws-integrations-ap-northeast-3.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate) |
+| `ap-south-1`     | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-south-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-ap-south-1.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)         |
+| `ap-southeast-1` | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-ap-southeast-1.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate) |
+| `ap-southeast-2` | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/create/review?templateURL=https://logzio-aws-integrations-ap-southeast-2.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate) |
+| `ca-central-1`   | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ca-central-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-ca-central-1.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)     |
 
 
 #### Point the OTLP exporter to the new collector container
@@ -29,26 +47,30 @@ Update the OTLP exporter configuration in your applications to point to the new 
 
 The CloudFormation template requires the following parameters:
 ### Traces and metrics
-|`ClusterName`|The name of your ECS cluster from which you want to collect metrics.|
-|`TaskRoleArn`|Specifies whether to create default IAM roles (True or False).|
-|`ExecutionRoleArn`|The role ARN you want to use as the ECS task role. (Optional, only required if you set `CreateIAMRoles` to False)|
-|`SecurityGroups`|The role ARN you want to use as the ECS execution role. (Optional, only required if you set `CreateIAMRoles` to False)|
-|`Subnets`|The list of SecurityGroupIds in your Virtual Private Cloud (VPC).|
-|`LogzioTracingToken`|Your Logz.io tracing account token.|
-|`LogzioMetricsToken`|Your Logz.io metrics account token.|
-|`LogzioRegion`|Your Logz.io region. for example: `us`|
-|`LogzioListenerUrl`|Your Logz.io listener URL. for example: `https://listener.logz.io:8053`|
+| Parameter            | Description                                                                                                            |
+|----------------------|------------------------------------------------------------------------------------------------------------------------|
+| `ClusterName`        | The name of your ECS cluster from which you want to collect metrics.                                                   |
+| `TaskRoleArn`        | Specifies whether to create default IAM roles (True or False).                                                         |
+| `ExecutionRoleArn`   | The role ARN you want to use as the ECS task role. (Optional, only required if you set `CreateIAMRoles` to False)      |
+| `SecurityGroups`     | The role ARN you want to use as the ECS execution role. (Optional, only required if you set `CreateIAMRoles` to False) |
+| `Subnets`            | The list of SecurityGroupIds in your Virtual Private Cloud (VPC).                                                      |
+| `LogzioTracingToken` | Your Logz.io tracing account token.                                                                                    |
+| `LogzioMetricsToken` | Your Logz.io metrics account token.                                                                                    |
+| `LogzioRegion`       | Your Logz.io region. for example: `us`                                                                                 |
+| `LogzioListenerUrl`  | Your Logz.io listener URL. for example: `https://listener.logz.io:8053`                                                |
 ### Logs
-|`logzioLogsToken`|Your Logz.io logs account token.|
-|`LogzioListener`|Your Logz.io listener URL. for example: `https://aws-firehose-logs-listener.logz.io`|
-|`logzioType`|The log type you'll use with this shipping method. This can be a built-in log type, or your custom log type.|
-|`services`|A comma-separated list of services you want to collect logs from.|
-|`customLogGroups`|A comma-separated list of custom log groups you want to collect logs from.|
-|`triggerLambdaTimeout`|The amount of seconds that Lambda allows a function to run before stopping it, for the trigger function.|
-|`triggerLambdaMemory`|Trigger function's allocated CPU proportional to the memory configured, in MB.|
-|`triggerLambdaLogLevel`|Log level for the Lambda function. Can be one of: debug, info, warn, error, fatal, panic.|
-|`httpEndpointDestinationIntervalInSeconds`|The length of time, in seconds, that Kinesis Data Firehose buffers incoming data before delivering it to the destination.|
-|`httpEndpointDestinationSizeInMBs`|The size of the buffer, in MBs, that Kinesis Data Firehose uses for incoming data before delivering it to the destination.|
+| Parameter                                  | Description                                                                                                                |
+|--------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| `logzioLogsToken`                          | Your Logz.io logs account token.                                                                                           |
+| `LogzioListener`                           | Your Logz.io listener URL. for example: `https://aws-firehose-logs-listener.logz.io`                                       |
+| `logzioType`                               | The log type you'll use with this shipping method. This can be a built-in log type, or your custom log type.               |
+| `services`                                 | A comma-separated list of services you want to collect logs from.                                                          |
+| `customLogGroups`                          | A comma-separated list of custom log groups you want to collect logs from.                                                 |
+| `triggerLambdaTimeout`                     | The amount of seconds that Lambda allows a function to run before stopping it, for the trigger function.                   |
+| `triggerLambdaMemory`                      | Trigger function's allocated CPU proportional to the memory configured, in MB.                                             |
+| `triggerLambdaLogLevel`                    | Log level for the Lambda function. Can be one of: debug, info, warn, error, fatal, panic.                                  |
+| `httpEndpointDestinationIntervalInSeconds` | The length of time, in seconds, that Kinesis Data Firehose buffers incoming data before delivering it to the destination.  |
+| `httpEndpointDestinationSizeInMBs`         | The size of the buffer, in MBs, that Kinesis Data Firehose uses for incoming data before delivering it to the destination. |
 
 
 ## Resources and Configuration

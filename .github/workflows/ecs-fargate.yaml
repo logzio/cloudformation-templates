@@ -1,4 +1,4 @@
-name: Upload new release
+name: Upload new release ecs fargate
 on:
   release:
     types: [published]
