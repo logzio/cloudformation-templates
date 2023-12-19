@@ -16,6 +16,8 @@ Next, you'll need to configure your CloudFormation template and point the OTLP e
 
 #### Deploy the CloudFormation template
 
+##### Cloudformation template for logs, metrics and traces:
+
 Click on the **Launch Stack** button below to deploy the CloudFormation template. This template will create the required resources and configurations for the AWS OTel Collector.
 
 | Region           | Deployment                                                                                                                                                                                                                                                                                                                                           |
@@ -39,6 +41,29 @@ Click on the **Launch Stack** button below to deploy the CloudFormation template
 | `ca-central-1`   | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ca-central-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-ca-central-1.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)     |
 
 
+##### Cloudformation template for metrics and traces only:
+
+| Region           | Deployment                                                                                                                                                                                                                                                                                                                                           |
+|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `us-east-1`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-us-east-1.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `us-east-2`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/create/review?templateURL=https://logzio-aws-integrations-us-east-2.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `us-west-1`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-us-west-1.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `us-west-2`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/create/review?templateURL=https://logzio-aws-integrations-us-west-2.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `eu-central-1`   | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-central-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-eu-central-1.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)     |
+| `eu-north-1`     | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-north-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-eu-north-1.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)         |
+| `eu-west-1`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-eu-west-1.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `eu-west-2`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-2#/stacks/create/review?templateURL=https://logzio-aws-integrations-eu-west-2.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `eu-west-3`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-3#/stacks/create/review?templateURL=https://logzio-aws-integrations-eu-west-3.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `sa-east-1`      | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=sa-east-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-sa-east-1.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)           |
+| `ap-northeast-1` | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-ap-northeast-1.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate) |
+| `ap-northeast-2` | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-2#/stacks/create/review?templateURL=https://logzio-aws-integrations-ap-northeast-2.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate) |
+| `ap-northeast-3` | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-3#/stacks/create/review?templateURL=https://logzio-aws-integrations-ap-northeast-3.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate) |
+| `ap-south-1`     | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-south-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-ap-south-1.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)         |
+| `ap-southeast-1` | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-ap-southeast-1.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate) |
+| `ap-southeast-2` | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/create/review?templateURL=https://logzio-aws-integrations-ap-southeast-2.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate) |
+| `ca-central-1`   | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ca-central-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-ca-central-1.s3.amazonaws.com/ecs-fargate/ecs-fargate_collector-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)     |
+
+
 #### Point the OTLP exporter to the new collector container
 
 Update the OTLP exporter configuration in your applications to point to the new collector container running in your ECS Fargate tasks.
@@ -46,7 +71,9 @@ Update the OTLP exporter configuration in your applications to point to the new 
 ## Parameters
 
 The CloudFormation template requires the following parameters:
+
 ### Traces and metrics
+
 | Parameter            | Description                                                                                                            |
 |----------------------|------------------------------------------------------------------------------------------------------------------------|
 | `ClusterName`        | The name of your ECS cluster from which you want to collect metrics.                                                   |
@@ -58,7 +85,9 @@ The CloudFormation template requires the following parameters:
 | `LogzioMetricsToken` | Your Logz.io metrics account token.                                                                                    |
 | `LogzioRegion`       | Your Logz.io region. for example: `us`                                                                                 |
 | `LogzioListenerUrl`  | Your Logz.io listener URL. for example: `https://listener.logz.io:8053`                                                |
+
 ### Logs
+
 | Parameter                                  | Description                                                                                                                |
 |--------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
 | `logzioLogsToken`                          | Your Logz.io logs account token.                                                                                           |

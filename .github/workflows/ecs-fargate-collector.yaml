@@ -38,5 +38,5 @@ jobs:
           aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY }}
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_KEY }}
           aws configure set region ${{ matrix.aws_region }}
-          aws s3 cp ./sam-template-collector${{ matrix.aws_region }}.yaml s3://logzio-aws-integrations-${{ matrix.aws_region }}/ecs-fargate/${{ github.event.release.tag_name }}/sam-template-collector.yaml --acl public-read
+          aws s3 cp ./sam-template-collector${{ matrix.aws_region }}.yaml s3://logzio-aws-integrations-${{ matrix.aws_region }}/ecs-fargate/${{ github.event.release.tag_name }}/sam-template.yaml --acl public-read
 
