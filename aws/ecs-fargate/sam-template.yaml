@@ -359,7 +359,7 @@ Resources:
           - Arn
         - !If
           - DefaultTaskRole
-          - !Sub 'arn:aws:iam::${AWS::AccountId}:role/AWSOTelRole'
+          - !GetAtt ECSTaskRole.Arn # !Sub 'arn:aws:iam::${AWS::AccountId}:role/AWSOTelRole'
           - !Ref TaskRoleArn
       ExecutionRoleArn: !If
         - CreateRoles
@@ -368,7 +368,7 @@ Resources:
           - Arn
         - !If
           - DefaultExecutionRole
-          - !Sub 'arn:aws:iam::${AWS::AccountId}:role/AWSOTelExecutionRole'
+          - !GetAtt ECSExecutionRole.Arn # 'arn:aws:iam::${AWS::AccountId}:role/AWSOTelExecutionRole'
           - !Ref ExecutionRoleArn
       NetworkMode: awsvpc
       ContainerDefinitions:
@@ -422,7 +422,7 @@ Resources:
   CollectorConfigParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: collector-config
+      Name: !Join [ '-', [ 'collector-config', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
       Type: String
       Value: |
         receivers:
@@ -500,7 +500,7 @@ Resources:
                   - 'xray:GetSamplingStatisticSummaries'
                   - 'ssm:GetParameters'
                 Resource: '*'
-      RoleName: AWSOTelRole
+      RoleName: !Join [ '-', [ 'AWSOTelRole', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
   ECSExecutionRole:
     Type: 'AWS::IAM::Role'
     Condition: CreateRoles
@@ -520,4 +520,4 @@ Resources:
         - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
         - 'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess'
         - 'arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess'
-      RoleName: AWSOTelExecutionRole
+      RoleName: !Join [ '-', [ 'AWSOTelExecutionRole', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
