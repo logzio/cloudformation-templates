@@ -1,0 +1,235 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  ClusterName:
+    Type: String
+    Description: Enter the name of your ECS cluster from which you want to collect metrics
+  LogzioTracingToken:
+    Type: String
+    Description: Logz.io tracing account token
+  LogzioMetricsToken:
+    Type: String
+    Description: Logz.io metrics account token
+  LogzioRegion:
+    Type: String
+    Description: Logz.io region
+    AllowedValues:
+      - us
+      - eu
+      - au
+      - ca
+      - uk
+      - wa
+  LogzioListenerUrl:
+    Type: String
+    Description: Logz.io listener url
+    AllowedValues:
+      - https://listener.logz.io:8053
+      - https://listener-eu.logz.io:8053
+      - https://listener-au.logz.io:8053
+      - https://listener-ca.logz.io:8053
+      - https://listener-uk.logz.io:8053
+      - https://listener-wa.logz.io:8053
+  CreateIAMRoles:
+    Type: String
+    Default: 'True'
+    AllowedValues:
+      - 'True'
+      - 'False'
+    Description: Whether to create default IAM roles
+    ConstraintDescription: must specify True or False.
+  TaskRoleArn:
+    Type: String
+    Description: Enter the role arn you want to use as the ecs task role. (Optional, required only if `CreateIAMRoles` is set to `False`)
+  ExecutionRoleArn:
+    Type: String
+    Description: Enter the role arn you want to use as the ecs execution role. (Optional, required only if `CreateIAMRoles` is set to `False`)
+  SecurityGroups:
+    Type: CommaDelimitedList
+    Description: The list of SecurityGroupIds in your Virtual Private Cloud (VPC)
+  Subnets:
+    Type: CommaDelimitedList
+    Description: The list of Subnets in your Virtual Private Cloud (VPC)
+Conditions:
+  CreateRoles: !Equals
+    - !Ref CreateIAMRoles
+    - 'True'
+  DefaultTaskRole: !Equals
+    - !Ref TaskRoleArn
+    - Default
+  DefaultExecutionRole: !Equals
+    - !Ref ExecutionRoleArn
+    - Default
+Resources:
+  ECSTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: ecs-aws-otel-sidecar-service
+      TaskRoleArn: !If
+        - CreateRoles
+        - !GetAtt
+          - ECSTaskRole
+          - Arn
+        - !If
+          - DefaultTaskRole
+          - !GetAtt ECSTaskRole.Arn
+          - !Ref TaskRoleArn
+      ExecutionRoleArn: !If
+        - CreateRoles
+        - !GetAtt
+          - ECSExecutionRole
+          - Arn
+        - !If
+          - DefaultExecutionRole
+          - !GetAtt ECSExecutionRole.Arn
+          - !Ref ExecutionRoleArn
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: aws-collector
+          Image: 'amazon/aws-otel-collector:latest'
+          Command: ["--config=/etc/ecs/ecs-default-config.yaml"]
+          PortMappings:
+            - ContainerPort: 4317
+              Protocol: tcp
+            - ContainerPort: 4318
+              Protocol: tcp
+          Cpu: '256'
+          Memory: '512'
+          Environment:
+            - Name: LOGZIO_TRACING_TOKEN
+              Value: !Ref LogzioTracingToken
+            - Name: LOGZIO_REGION
+              Value: !Ref LogzioRegion
+            - Name: LOGZIO_LISTENER_URL
+              Value: !Ref LogzioListenerUrl
+            - Name: LOGZIO_METRICS_TOKEN
+              Value: !Ref LogzioMetricsToken
+          Secrets:
+            - Name: AOT_CONFIG_CONTENT
+              ValueFrom: !Ref CollectorConfigParameter
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-create-group: 'True'
+              awslogs-group: /ecs/ecs-aws-otel-sidecar-collector
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-stream-prefix: ecs
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: '1024'
+      Memory: '2048'
+  ECSReplicaService:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      TaskDefinition: !Ref ECSTaskDefinition
+      Cluster: !Ref ClusterName
+      LaunchType: FARGATE
+      SchedulingStrategy: REPLICA
+      DesiredCount: 1
+      ServiceName: aws-otel-sidecar-service
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups: !Ref SecurityGroups
+          Subnets: !Ref Subnets
+  CollectorConfigParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Join [ '-', [ 'collector-config', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+      Type: String
+      Value: |
+        receivers:
+          awsxray:
+            endpoint: 0.0.0.0:2000
+            transport: udp
+          otlp:
+            protocols:
+              grpc:
+                endpoint: "0.0.0.0:4317"
+              http:
+                endpoint: "0.0.0.0:4318"
+          awsecscontainermetrics:
+        processors:
+          batch:
+            send_batch_size: 10000
+            timeout: 1s
+        exporters:
+          logzio/traces:
+            # replace with your Logz.io tracing account token
+            account_token: ${LOGZIO_TRACING_TOKEN}
+            # replace with your Logz.io listener URL
+            region: ${LOGZIO_REGION}
+          prometheusremotewrite:
+            # replace with your Logz.io account token
+            endpoint: ${LOGZIO_LISTENER_URL}
+            external_labels:
+              aws_env: fargate-ecs
+            headers:
+              # replace with your Logz.io metrics account token
+              Authorization: "Bearer ${LOGZIO_METRICS_TOKEN}"
+            resource_to_telemetry_conversion:
+              enabled: true
+        service:
+          pipelines:
+            traces:
+              receivers: [ awsxray,otlp ]
+              processors: [ batch ]
+              exporters: [ logzio/traces ]
+            metrics:
+              receivers: [ otlp, awsecscontainermetrics ]
+              exporters: [ prometheusremotewrite ]
+          telemetry:
+            logs:
+              level: "debug"
+  ECSTaskRole:
+    Type: 'AWS::IAM::Role'
+    Condition: CreateRoles
+    Properties:
+      Description: Allows ECS tasks to call AWS services on your behalf.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: AWSOpenTelemetryPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:PutLogEvents'
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:DescribeLogStreams'
+                  - 'logs:DescribeLogGroups'
+                  - 'xray:PutTraceSegments'
+                  - 'xray:PutTelemetryRecords'
+                  - 'xray:GetSamplingRules'
+                  - 'xray:GetSamplingTargets'
+                  - 'xray:GetSamplingStatisticSummaries'
+                  - 'ssm:GetParameters'
+                Resource: '*'
+      RoleName: !Join [ '-', [ 'AWSOTelRole', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
+  ECSExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Condition: CreateRoles
+    Properties:
+      Description: >-
+        Allows ECS container agent makes calls to the Amazon ECS API on your
+        behalf.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+        - 'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess'
+      RoleName: !Join [ '-', [ 'AWSOTelExecutionRole', !Select [ 4, !Split [ '-', !Select [ 2, !Split [ '/', !Ref AWS::StackId ] ] ] ] ] ]
