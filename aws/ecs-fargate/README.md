@@ -16,7 +16,9 @@ Next, you'll need to configure your CloudFormation template and point the OTLP e
 
 #### Deploy the CloudFormation template
 
-##### Cloudformation template for logs, metrics and traces:
+**Note**: currently we support 2 different types of Cloudformation stacks. Option 1 will ship all logs from ECS clusters, and metrics and traces from 1 cluster. If you want to collect metrics and traces from multiple clusters, you can also deploy multiple Cloudformation stack of option 2, that deploys only metrics and traces (without logs).
+
+##### (Option 1) Cloudformation template for logs, metrics and traces:
 
 Click on the **Launch Stack** button below to deploy the CloudFormation template. This template will create the required resources and configurations for the AWS OTel Collector.
 
@@ -41,7 +43,7 @@ Click on the **Launch Stack** button below to deploy the CloudFormation template
 | `ca-central-1`   | [![Deploy to AWS](https://dytvr9ot2sszz.cloudfront.net/logz-docs/lights/LightS-button.png)](https://console.aws.amazon.com/cloudformation/home?region=ca-central-1#/stacks/create/review?templateURL=https://logzio-aws-integrations-ca-central-1.s3.amazonaws.com/ecs-fargate/ecs-fargate-0.0.1/sam-template.yaml&stackName=logzio-ecs-fargate)     |
 
 
-##### Cloudformation template for metrics and traces only:
+##### (Option 2) Cloudformation template for metrics and traces only:
 
 | Region           | Deployment                                                                                                                                                                                                                                                                                                                                           |
 |------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
