@@ -16,7 +16,7 @@ Next, you'll need to configure your CloudFormation template and point the OTLP e
 
 #### Deploy the CloudFormation template
 
-**Note**: currently we support 2 different types of Cloudformation stacks. Option 1 will ship all logs from ECS clusters, and metrics and traces from 1 cluster. If you want to collect metrics and traces from multiple clusters, you can also deploy multiple Cloudformation stack of option 2, that deploys only metrics and traces (without logs).
+**Note**: We support two different types of CloudFormation stacks. Option 1 collects all logs from ECS clusters and also gathers metrics and traces from one cluster. For collecting metrics and traces from multiple clusters without logs, deploy multiple instances of Option 2, which is exclusively designed for metrics and traces.
 
 ##### (Option 1) Cloudformation template for logs, metrics and traces:
 
