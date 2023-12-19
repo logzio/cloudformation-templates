@@ -2,6 +2,7 @@
 This repository contains public cloudformation templates for logzio customers to automate aws integrations deployments
 ## Templates
 - `ecs-fargate`
+- `ecs-fargate_collector`
 ## Development: Add a new template
 - Create a new directory in `./aws` path with the name of your new template -
 - Create your template file with the name `sam-template.yaml`
