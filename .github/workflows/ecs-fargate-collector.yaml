@@ -30,7 +30,7 @@ jobs:
           - 'ca-central-1'
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Upload to aws
         run: |
           sudo apt-get update
@@ -39,4 +39,3 @@ jobs:
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_KEY }}
           aws configure set region ${{ matrix.aws_region }}
           aws s3 cp ./aws/ecs-fargate/sam-template-collector.yaml s3://logzio-aws-integrations-${{ matrix.aws_region }}/ecs-fargate/${{ github.event.release.tag_name }}/sam-template.yaml --acl public-read
-

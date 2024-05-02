@@ -30,7 +30,7 @@ jobs:
           - 'ca-central-1'
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: create new version
         run: |
           cp ./aws/ecs-fargate/sam-template.yaml ./sam-template-${{ matrix.aws_region }}.yaml
